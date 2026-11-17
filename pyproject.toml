@@ -1,0 +1,29 @@
+[project]
+name = "unlam-mcp"
+version = "0.1.0"
+description = "Servidor MCP para la UNLaM: materias, contenidos y foros de MIeL desde Claude u otro cliente MCP."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Blas", email = "126523540+blasestevez@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.12",
+    "httpx>=0.28",
+    "keyring>=25.7.0",
+    "mcp>=2.3,<3",
+    "pillow>=13.0.0",
+    "pydantic-settings>=2.6",
+    "pypdfium2>=5.15.2",
+    "python-docx>=1.2.0",
+    "python-pptx>=1.0.2",
+]
+
+[project.scripts]
+unlam-mcp = "unlam_mcp.server:main"
+
+[build-system]
+requires = ["uv_build>=0.13.8,<0.14.0"]
+build-backend = "uv_build"
