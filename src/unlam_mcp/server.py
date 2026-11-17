@@ -542,6 +542,15 @@ def crear_servidor(
         with errores_para_el_modelo():
             return await miel(ctx).intra.historia_academica()
 
+    @mcp.tool(annotations=ESCRIBE_LOCAL)
+    async def intraconsulta_descargar_historia_academica(ctx: Ctx) -> Descarga:
+        """Baja el PDF de la historia académica de Intraconsulta a la compu del usuario
+        (MIEL_CARPETA/Intraconsulta). Es gratis y no inicia ningún trámite. No es un
+        certificado oficial: para eso está el analítico, que se pide en Intraconsulta."""
+        with errores_para_el_modelo():
+            ruta = await miel(ctx).intra.descargar_historia_academica(carpeta_intra(ctx))
+            return Descarga(nombre=ruta.name, ruta=str(ruta), bytes=ruta.stat().st_size)
+
     @mcp.tool(annotations=SOLO_LECTURA)
     async def intraconsulta_regularizadas(ctx: Ctx) -> list[Regularizadas]:
         """Materias regularizadas (cursada aprobada, final pendiente) según Intraconsulta."""

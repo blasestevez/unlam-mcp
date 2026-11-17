@@ -56,7 +56,7 @@ class MateriaAprobada(Modelo):
     nombre: str
     nota: str | None = None
     fecha: date | None = None
-    origen: str | None = Field(default=None, description="Código de Intraconsulta, ej. 'P' o 'E'.")
+    origen: str | None = Field(default=None, description="'Promoción', 'Examen' o 'Equivalencia'.")
     acta: str | None = Field(default=None, description="Acta o resolución.")
 
 
@@ -93,6 +93,8 @@ class InscripcionExamen(Modelo):
 # Sólo las constancias de examen: son gratis e inmediatas. Los certificados (alumno
 # regular, materias aprobadas, analítico) son trámites pagos y quedan afuera a propósito.
 CONSTANCIAS = {"parcial": "ConstanciaExamenParcial", "final": "ConstanciaExamenFinal"}
+# Códigos de `origen` en la historia académica (los mismos que muestra la app).
+_ORIGENES = {"P": "Promoción", "E": "Examen", "B": "Equivalencia"}
 
 
 # ----------------------------------------------------------------- cliente
@@ -142,7 +144,7 @@ class IntraClient:
                     nombre=_titulo(m.get("materia_nombre")),
                     nota=_vacio(m.get("nota")),
                     fecha=_fecha(m.get("fecha")),
-                    origen=_vacio(m.get("origen")),
+                    origen=_ORIGENES.get(str(m.get("origen") or ""), _vacio(m.get("origen"))),
                     acta=_vacio(m.get("acta_o_resolucion")),
                 )
                 for m in c.get("listado_materias") or []
@@ -156,6 +158,11 @@ class IntraClient:
                 )
             )
         return resultado
+
+    async def descargar_historia_academica(self, carpeta: Path) -> Path:
+        """Baja el PDF de la historia académica (el mismo que el botón de Intraconsulta)."""
+        datos = await self._get_datos("HistoriaAcademica/DescargarHistoriaAcademica")
+        return _guardar_pdf(datos, carpeta / "Historia academica.pdf")
 
     async def regularizadas(self) -> list[Regularizadas]:
         return [

@@ -49,7 +49,8 @@ Con la misma cuenta (DNI y clave de MIeL), también lee [Intraconsulta](https://
 | Tool | Qué hace |
 |---|---|
 | `intraconsulta_materias_en_curso` | Las materias en las que estás inscripto este cuatrimestre: comisión, día y horario, aula y modalidad. |
-| `intraconsulta_historia_academica` | Tus materias aprobadas con nota, fecha y acta, y un promedio simple calculado a partir de ellas. |
+| `intraconsulta_historia_academica` | Tus materias aprobadas con nota, fecha, acta y origen (promoción, examen o equivalencia), y un promedio simple calculado a partir de ellas. |
+| `intraconsulta_descargar_historia_academica` | Baja el PDF de la historia académica a `MIEL_CARPETA/Intraconsulta`. Es gratis y no inicia ningún trámite. |
 | `intraconsulta_regularizadas` | Las materias con la cursada aprobada y el final pendiente. |
 | `intraconsulta_constancias` | Las materias (o mesas de final) para las que podés bajar una constancia de examen. |
 | `intraconsulta_descargar_constancia` | Baja la constancia de examen en PDF a `MIEL_CARPETA/Intraconsulta`. Es gratis y no inicia ningún trámite. |
