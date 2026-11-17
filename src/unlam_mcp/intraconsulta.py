@@ -222,6 +222,11 @@ class IntraClient:
                 r = await self._http.post(
                     _VIEJA + "/index.jsp", data={"usuario": self._usuario, "clave": self._clave}
                 )
+                if r.status_code >= 500:  # ej. cuando está en mantenimiento
+                    raise IntraError(
+                        f"Intraconsulta está fallando (error {r.status_code}), puede estar en "
+                        "mantenimiento. No es tu clave: probá más tarde."
+                    )
                 if "salir.jsp" not in r.text:  # sólo aparece con la sesión iniciada
                     raise IntraError(
                         "Intraconsulta rechazó el usuario o la clave (se usan los mismos que en MIeL). "
