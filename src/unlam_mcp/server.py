@@ -22,6 +22,7 @@ from pydantic import Field
 
 from . import __version__, archivos
 from .archivos import Lectura
+from .intraconsulta import Cursada, HistoriaAcademica, IntraError, Regularizadas
 from .miel import (
     MielClient,
     MielError,
@@ -52,7 +53,9 @@ from .parsers import (
 INSTRUCCIONES = """\
 Acceso a MIeL, el campus virtual de la UNLaM, con la cuenta del usuario.
 Empezá por miel_materias. Donde se pide `materia` sirve el id de comisión, el
-código o palabras del nombre, sin importar acentos ("prog avanzada", "3630")."""
+código o palabras del nombre, sin importar acentos ("prog avanzada", "3630").
+Las tools intraconsulta_* leen Intraconsulta (inscripción oficial, historia
+académica y regularizadas) con la misma cuenta."""
 
 SOLO_LECTURA = ToolAnnotations(read_only_hint=True, open_world_hint=True)
 ESCRIBE_LOCAL = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=True)
@@ -181,7 +184,7 @@ def errores_para_el_modelo() -> Iterator[None]:
     """Un MielError llega al modelo con su mensaje (que dice qué hacer); el resto, genérico."""
     try:
         yield
-    except MielError as e:
+    except (MielError, IntraError) as e:
         raise ToolError(str(e)) from e
 
 
@@ -520,6 +523,29 @@ def crear_servidor(
         with errores_para_el_modelo():
             m = await miel(ctx).materia(materia)
             return await miel(ctx).cancelar_turno(m.id, turno_id)
+
+    # ---------------------------------------------------------- Intraconsulta
+
+    @mcp.tool(annotations=SOLO_LECTURA)
+    async def intraconsulta_materias_en_curso(ctx: Ctx) -> list[Cursada]:
+        """Materias que estás cursando según Intraconsulta (la inscripción oficial de la
+        UNLaM): código, comisión, día y horario, aula y modalidad."""
+        with errores_para_el_modelo():
+            return await miel(ctx).intra.materias_en_curso()
+
+    @mcp.tool(annotations=SOLO_LECTURA)
+    async def intraconsulta_historia_academica(ctx: Ctx) -> list[HistoriaAcademica]:
+        """Historia académica de Intraconsulta: materias aprobadas con nota, fecha y acta,
+        por carrera, y el promedio simple de las notas (calculado por esta tool, no el
+        oficial de la UNLaM). Sirve para "¿qué materias tengo aprobadas?" o "¿qué promedio tengo?"."""
+        with errores_para_el_modelo():
+            return await miel(ctx).intra.historia_academica()
+
+    @mcp.tool(annotations=SOLO_LECTURA)
+    async def intraconsulta_regularizadas(ctx: Ctx) -> list[Regularizadas]:
+        """Materias regularizadas (cursada aprobada, final pendiente) según Intraconsulta."""
+        with errores_para_el_modelo():
+            return await miel(ctx).intra.regularizadas()
 
     @mcp.tool(annotations=SOLO_LECTURA)
     async def miel_novedades(ctx: Ctx) -> list[Novedades]:

@@ -13,6 +13,7 @@ Conectá Claude (u otro asistente compatible con [MCP](https://modelcontextproto
 - *"Anotame en el turno de las 18 del recuperatorio."*
 - *"Mandale un mensaje a mi grupo de Taller Web con el informe adjunto."*
 - *"Entregá este PDF en el TP 1 de Base de Datos."*
+- *"¿Qué promedio tengo y cuántas materias aprobé?"*
 
 > [!NOTE]
 > Proyecto no oficial, sin relación con la UNLaM. Casi todo es de lectura. Las únicas acciones que hace a tu nombre son **reservar o cancelar turnos, mandar mensajes y entregar prácticas**, y sólo cuando se lo pedís. El foro y las evaluaciones son de solo lectura: nunca publica en el foro ni entra a rendir una evaluación.
@@ -40,6 +41,16 @@ Conectá Claude (u otro asistente compatible con [MCP](https://modelcontextproto
 | `miel_grupos` | Tus grupos de trabajo en cada materia, con sus integrantes. |
 | `miel_evaluaciones` | Las evaluaciones online de una materia y si están habilitadas. Sólo las lista. |
 | `miel_turnos` | Los turnos de una materia (recuperatorios, consultas): fecha, lugar, vacantes y si ya reservaste. |
+
+### Intraconsulta
+
+Con la misma cuenta (DNI y clave de MIeL), también lee [Intraconsulta](https://intraconsulta.unlam.edu.ar):
+
+| Tool | Qué hace |
+|---|---|
+| `intraconsulta_materias_en_curso` | Las materias en las que estás inscripto este cuatrimestre: comisión, día y horario, aula y modalidad. |
+| `intraconsulta_historia_academica` | Tus materias aprobadas con nota, fecha y acta, y un promedio simple calculado a partir de ellas. |
+| `intraconsulta_regularizadas` | Las materias con la cursada aprobada y el final pendiente. |
 
 ### Hacer cosas a tu nombre
 
@@ -105,15 +116,18 @@ Si corrés el proyecto desde una copia local (`uv run unlam-mcp`), también pod�
 
 ## Para quien quiera colaborar
 
-El código son cuatro archivos:
+El código son cinco archivos:
 
 ```
 src/unlam_mcp/
-├── server.py    # las tools que ve el asistente
-├── miel.py      # entra a MIeL: login, páginas, descargas
-├── parsers.py   # lee el HTML de MIeL y lo convierte en datos
-└── archivos.py  # saca el texto de PDF, Word y PowerPoint, y páginas como imagen
+├── server.py         # las tools que ve el asistente
+├── miel.py           # entra a MIeL: login, páginas, descargas
+├── parsers.py        # lee el HTML de MIeL y lo convierte en datos
+├── intraconsulta.py  # entra a Intraconsulta y lee su API JSON
+└── archivos.py       # saca el texto de PDF, Word y PowerPoint, y páginas como imagen
 ```
+
+Intraconsulta nueva tiene una API JSON (`/backend/api/`), pero los alumnos inician sesión por la versión vieja (`alumno2.unlam.edu.ar`). Ésta redirige a la nueva con un `transferToken`, que se canjea en `Login/system-login` por la cookie de sesión.
 
 Para correrlo desde tu copia: `git clone`, después `uv run unlam-mcp`.
 
@@ -125,7 +139,7 @@ Si algo deja de andar, lo más probable es que MIeL haya cambiado el HTML de una
 
 ## Próximamente
 
-- [ ] Intraconsulta: materias en curso e historia académica
+- [ ] Intraconsulta: constancias de examen e inscripciones
 
 ## Créditos
 

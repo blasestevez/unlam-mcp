@@ -25,6 +25,7 @@ from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from . import __version__, parsers
+from .intraconsulta import IntraClient
 from .parsers import (
     Asistencia,
     Contenido,
@@ -148,6 +149,10 @@ class MielClient:
         self._ultimo_request = 0.0
         self._cache: dict[str, tuple[float, str]] = {}
         self._descargas: dict[str, Path] = {}  # url -> archivo ya bajado en esta sesión
+        # Intraconsulta usa el mismo usuario y clave; su sesión es aparte.
+        self.intra = IntraClient(
+            settings.usuario, settings.clave.get_secret_value(), timeout=settings.timeout
+        )
 
     async def __aenter__(self) -> Self:
         return self
@@ -156,6 +161,7 @@ class MielClient:
         self, tipo: type[BaseException] | None, exc: BaseException | None, tb: TracebackType | None
     ) -> None:
         await self._http.aclose()
+        await self.intra.aclose()
 
     # ================================================================ materias
 
