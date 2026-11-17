@@ -10,7 +10,9 @@ No sabe nada de MCP: se puede usar solo, desde un script o una notebook.
 from __future__ import annotations
 
 import asyncio
+import base64
 import re
+from html import escape as html_escape
 import time
 import unicodedata
 from pathlib import Path
@@ -25,6 +27,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from . import __version__, parsers
 from .parsers import (
     Contenido,
+    Destinatario,
     Evaluacion,
     Materia,
     Mensaje,
@@ -122,6 +125,7 @@ def borrar_credenciales() -> bool:
 # El formulario de login sólo aparece en páginas públicas: si una página interna
 # lo trae, MIeL nos mandó al home porque la sesión venció.
 _MARCA_LOGIN = 'id="formLogin"'
+_MAX_ADJUNTO = 40 * 1024 * 1024  # el formulario valida `filesize: 40` (MB)
 
 
 class MielClient:
@@ -259,6 +263,74 @@ class MielClient:
             raise MielError(f"No encontré el mensaje {mensaje_id}. Usá miel_mensajes.")
         return parsers.parse_mensaje(html, mensaje_id)
 
+    async def destinatarios(self, materia_id: str) -> list[Destinatario]:
+        return parsers.parse_destinatarios(await self._html(f"/mensajeria/redactar/comision/{materia_id}"))
+
+    async def destinatario(self, materia_id: str, consulta: str) -> Destinatario:
+        """Busca por id o por palabras del nombre (sin importar acentos ni el orden)."""
+        todos = await self.destinatarios(materia_id)
+        buscado = normalizar(consulta)
+        if exacto := [d for d in todos if buscado in (d.id, normalizar(d.nombre))]:
+            return exacto[0]
+        palabras = buscado.replace(",", " ").split()
+        candidatos = [d for d in todos if palabras and all(p in normalizar(d.nombre) for p in palabras)]
+        if len(candidatos) == 1:
+            return candidatos[0]
+        if not candidatos:
+            raise MielError(f"No hay nadie llamado '{consulta}' en esa materia. Usá miel_destinatarios.")
+        nombres = "; ".join(f"{d.nombre} (id {d.id})" for d in candidatos)
+        raise MielError(f"'{consulta}' coincide con varios: {nombres}. Pasá el id.")
+
+    async def enviar_mensaje(
+        self,
+        materia_id: str,
+        para: list[str],
+        asunto: str,
+        texto: str,
+        adjunto: Path | None = None,
+    ) -> tuple[str, list[Destinatario]]:
+        """Manda un mensaje por la mensajería de la materia. Devuelve su id (en Enviados)
+        y a quiénes se envió."""
+        if not para:
+            raise MielError("Falta al menos un destinatario.")
+        if not asunto.strip() or not texto.strip():
+            raise MielError("El mensaje necesita asunto y texto.")
+        destinatarios = [await self.destinatario(materia_id, p) for p in para]
+
+        # MIeL espera el HTML del editor en base64 (de UTF-8).
+        html = "".join(f"<p>{html_escape(linea)}</p>" for linea in texto.strip().splitlines())
+        datos: dict[str, Any] = {
+            "borrador": "0",
+            "asunto": asunto.strip(),
+            "texto": base64.b64encode(html.encode()).decode(),
+            "adjuntoReenvio": "",
+        }
+        for d in destinatarios:
+            datos.setdefault(f"{d.tipo}[]", []).append(d.id)
+
+        # Siempre multipart, como el formulario: sin adjunto va un campo de archivo vacío.
+        archivo: tuple[str, bytes] = ("", b"")
+        if adjunto is not None:
+            adjunto = adjunto.expanduser()
+            if not adjunto.is_file():
+                raise MielError(f"No existe el archivo {adjunto}.")
+            if adjunto.stat().st_size > _MAX_ADJUNTO:
+                raise MielError("MIeL no acepta adjuntos de más de 40 MB.")
+            archivo = (adjunto.name, await asyncio.to_thread(adjunto.read_bytes))
+        salida = f"/mensajeria/salida/comision/{materia_id}/pag/1"
+        self._cache.pop(salida, None)
+        antes = {i for i, _ in parsers.parse_enviados(await self._html(salida))}
+
+        ruta = f"/mensajeria/event/enviarMensaje/comision/{materia_id}"
+        await self._postear(ruta, datos, files={"archivo": archivo})
+
+        # Se confirma buscándolo en la bandeja de salida.
+        self._cache.pop(salida, None)
+        for identificador, titulo in parsers.parse_enviados(await self._html(salida)):
+            if identificador not in antes and titulo == asunto.strip():
+                return identificador, destinatarios
+        raise MielError("MIeL no muestra el mensaje en Enviados: revisá en MIeL si salió.")
+
     # ========================================================= portafolio y más
 
     async def practicas(self, materia_id: str) -> list[Practica]:
@@ -356,14 +428,14 @@ class MielClient:
         self._cache[ruta] = (time.monotonic(), r.text)
         return r.text
 
-    async def _postear(self, ruta: str, datos: dict[str, str]) -> None:
+    async def _postear(self, ruta: str, datos: dict[str, Any], files: Any = None) -> None:
         """POST de un formulario de MIeL, con un reintento si la sesión venció."""
         await self._asegurar_login()
-        r = await self._enviar("POST", ruta, data=datos)
+        r = await self._enviar("POST", ruta, data=datos, files=files)
         if _MARCA_LOGIN in r.text:
             self._logueado = False
             await self.login()
-            r = await self._enviar("POST", ruta, data=datos)
+            r = await self._enviar("POST", ruta, data=datos, files=files)
         _verificar(r)
 
     async def _esperar_turno(self) -> None:

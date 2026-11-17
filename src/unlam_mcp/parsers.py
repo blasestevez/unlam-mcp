@@ -132,6 +132,16 @@ class MensajeCompleto(Modelo):
     adjuntos: list[Adjunto] = Field(default_factory=list)
 
 
+class Destinatario(Modelo):
+    """Alguien (o un grupo) a quien se le puede mandar un mensaje en una materia."""
+
+    id: str
+    nombre: str
+    tipo: str = Field(
+        description="'alumno', 'tutor', 'grupo', 'tutores' (todos) o 'alumnos' (todos)."
+    )
+
+
 class Practica(Modelo):
     """Una práctica del portafolio (trabajo práctico, parcial, etc.)."""
 
@@ -447,6 +457,34 @@ def parse_evaluaciones(html: str) -> list[Evaluacion]:
             )
         )
     return evaluaciones
+
+
+# ------------------------------------------------------------ redactar mensaje
+# Página: /mensajeria/redactar/comision/{id}
+# Desplegable #listaDestinatarios: <a data-type="alumno|tutor|grupo|tutores|alumnos"
+# data-id="...">NOMBRE</a>. Al enviar, cada uno va como `{data-type}[]={data-id}`.
+
+
+def parse_enviados(html: str) -> list[tuple[str, str]]:
+    """Bandeja de salida (/mensajeria/salida/...): (id, asunto) de cada mensaje, del más nuevo
+    al más viejo. Las filas no traen clases: fecha | para | adjunto | asunto | ... | leído."""
+    enviados = []
+    for enlace in _sopa(html).select("tr a.verMensaje[href]"):
+        if identificador := _id_en_url(str(enlace["href"])):
+            enviados.append((identificador, _texto(enlace)))
+    return enviados
+
+
+def parse_destinatarios(html: str) -> list[Destinatario]:
+    return [
+        # Sólo el texto propio del <a>: el <i> de adentro es el nombre del ícono ("person").
+        Destinatario(
+            id=str(a["data-id"]),
+            nombre=" ".join("".join(a.find_all(string=True, recursive=False)).split()),
+            tipo=str(a["data-type"]),
+        )
+        for a in _sopa(html).select("#listaDestinatarios a[data-type][data-id]")
+    ]
 
 
 # ----------------------------------------------------------------- turnos

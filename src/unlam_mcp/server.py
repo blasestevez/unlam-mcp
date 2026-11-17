@@ -33,6 +33,7 @@ from .miel import (
 from .parsers import (
     Modelo,
     Contenido,
+    Destinatario,
     Evaluacion,
     Materia,
     Mensaje,
@@ -53,6 +54,9 @@ ESCRIBE_LOCAL = ToolAnnotations(read_only_hint=False, destructive_hint=False, id
 # Cambian algo en MIeL a nombre del usuario.
 RESERVA = ToolAnnotations(
     read_only_hint=False, destructive_hint=False, idempotent_hint=True, open_world_hint=True
+)
+ENVIA = ToolAnnotations(
+    read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=True
 )
 CANCELA = ToolAnnotations(
     read_only_hint=False, destructive_hint=True, idempotent_hint=True, open_world_hint=True
@@ -99,6 +103,20 @@ class Bandeja(Modelo):
     pagina: int
     hay_mas: bool = Field(description="Si es true, hay mensajes más viejos en la página siguiente.")
     mensajes: list[Mensaje]
+
+
+class Destinatarios(Modelo):
+    materia: str
+    materia_id: str
+    destinatarios: list[Destinatario]
+
+
+class MensajeEnviado(Modelo):
+    id: str = Field(description="Id del mensaje en tu bandeja de Enviados.")
+    materia: str
+    para: list[str]
+    asunto: str
+    adjunto: str | None = None
 
 
 class PracticasMateria(Modelo):
@@ -294,6 +312,49 @@ def crear_servidor(
         with errores_para_el_modelo():
             m = await miel(ctx).materia(materia)
             return await miel(ctx).mensaje(m.id, mensaje_id)
+
+    @mcp.tool(annotations=SOLO_LECTURA)
+    async def miel_destinatarios(ctx: Ctx, materia: MateriaParam) -> Destinatarios:
+        """A quiénes les podés escribir en una materia: docentes, compañeros, tu grupo y
+        las opciones 'todos los tutores' o 'todos los alumnos'."""
+        with errores_para_el_modelo():
+            m = await miel(ctx).materia(materia)
+            return Destinatarios(
+                materia=m.nombre, materia_id=m.id, destinatarios=await miel(ctx).destinatarios(m.id)
+            )
+
+    @mcp.tool(annotations=ENVIA)
+    async def miel_enviar_mensaje(
+        ctx: Ctx,
+        materia: MateriaParam,
+        para: Annotated[
+            list[str],
+            Field(
+                min_length=1,
+                description="Nombres (o ids de miel_destinatarios). Ej: ['caltana martin'].",
+            ),
+        ],
+        asunto: str,
+        texto: Annotated[str, Field(description="Texto plano; cada línea va como un párrafo.")],
+        adjunto: Annotated[
+            str, Field(description="Ruta de un archivo local para adjuntar (máx. 40 MB).")
+        ] = "",
+    ) -> MensajeEnviado:
+        """Manda un mensaje por la mensajería de MIeL a nombre del usuario, con un
+        adjunto opcional. No se puede deshacer: usalo sólo si el usuario lo pidió, y
+        confirmá con él destinatarios y texto si los redactaste vos."""
+        with errores_para_el_modelo():
+            m = await miel(ctx).materia(materia)
+            mensaje_id, enviados = await miel(ctx).enviar_mensaje(
+                m.id, para, asunto, texto, Path(adjunto) if adjunto else None
+            )
+            return MensajeEnviado(
+                id=mensaje_id,
+                materia=m.nombre,
+                para=[d.nombre for d in enviados],
+                asunto=asunto,
+                adjunto=Path(adjunto).name if adjunto else None,
+            )
 
     @mcp.tool(annotations=SOLO_LECTURA)
     async def miel_practicas(
