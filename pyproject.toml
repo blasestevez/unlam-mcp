@@ -1,7 +1,7 @@
 [project]
 name = "unlam-mcp"
 version = "0.1.0"
-description = "Servidor MCP para la UNLaM: materias, contenidos y foros de MIeL desde Claude u otro cliente MCP."
+description = "Servidor MCP para la UNLaM: MIeL e Intraconsulta desde cualquier asistente con MCP (Claude, Cursor, VS Code, Codex, Gemini CLI...)."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -9,6 +9,17 @@ authors = [
     { name = "Blas", email = "126523540+blasestevez@users.noreply.github.com" }
 ]
 requires-python = ">=3.12"
+keywords = ["mcp", "mcp-server", "model-context-protocol", "unlam", "miel", "intraconsulta", "universidad", "argentina"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Education",
+    "Natural Language :: Spanish",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+]
 dependencies = [
     "beautifulsoup4>=4.12",
     "httpx>=0.28",
@@ -20,6 +31,11 @@ dependencies = [
     "python-docx>=1.2.0",
     "python-pptx>=1.0.2",
 ]
+
+[project.urls]
+Homepage = "https://github.com/blasestevez/unlam-mcp"
+Repository = "https://github.com/blasestevez/unlam-mcp"
+Issues = "https://github.com/blasestevez/unlam-mcp/issues"
 
 [project.scripts]
 unlam-mcp = "unlam_mcp.server:main"

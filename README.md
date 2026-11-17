@@ -1,6 +1,6 @@
 # unlam-mcp
 
-Conectá Claude (u otro asistente compatible con [MCP](https://modelcontextprotocol.io)) a tu cuenta de **MIeL** de la UNLaM y preguntale por tus materias en lenguaje natural:
+Conectá tu asistente de IA (Claude, Cursor, VS Code, Codex, Gemini CLI o cualquiera compatible con [MCP](https://modelcontextprotocol.io)) a tu cuenta de **MIeL** y de **Intraconsulta** de la UNLaM, y preguntale por tus materias en lenguaje natural:
 
 - *"¿Qué subieron esta semana en Programación Avanzada?"*
 - *"Bajame el programa de Base de Datos."*
@@ -74,39 +74,150 @@ Podés nombrar la materia como quieras: `"prog avanzada"`, `"base de datos"` o e
 
 ## Instalación
 
+Funciona con cualquier asistente que acepte servidores MCP locales (por STDIO): Claude, Cursor, VS Code con Copilot, Windsurf, Codex, Gemini CLI, LM Studio, Cline y otros.
+
 1. Instalá [uv](https://docs.astral.sh/uv/getting-started/installation/) (una sola vez).
 2. Iniciá sesión con tu usuario y clave de MIeL:
 
    ```bash
-   uvx --from git+https://github.com/<tu-usuario>/unlam-mcp unlam-mcp login
+   uvx unlam-mcp login
    ```
 
    Te los pide en la terminal, prueba entrar a MIeL y los guarda en el gestor de credenciales de tu compu (el Administrador de credenciales en Windows, el Llavero en macOS). No quedan en ningún archivo de texto ni en la config del asistente.
 
-3. Agregá el MCP a tu asistente.
+3. Agregá el MCP a tu asistente. En todos los casos el comando es `uvx unlam-mcp`.
 
-**Claude Code**
+<details>
+<summary><b>Claude Code</b></summary>
 
 ```bash
-claude mcp add unlam -- uvx --from git+https://github.com/<tu-usuario>/unlam-mcp unlam-mcp
+claude mcp add unlam -- uvx unlam-mcp
 ```
+</details>
 
-**Claude Desktop**: en *Settings → Developer → Edit Config*, agregá:
+<details>
+<summary><b>Claude Desktop</b></summary>
+
+En *Settings → Developer → Edit Config*, agregá:
 
 ```json
 {
   "mcpServers": {
     "unlam": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/<tu-usuario>/unlam-mcp", "unlam-mcp"]
+      "args": ["unlam-mcp"]
     }
   }
 }
 ```
 
-y reiniciá Claude Desktop. Si en Windows no arranca, poné la ruta completa a `uvx.exe` en `command` (la ves con `where uvx`).
+y reiniciá Claude Desktop.
+</details>
 
-**Otros asistentes** (Cursor, VS Code, etc.): cualquiera que acepte servidores MCP por STDIO sirve, con el comando `uvx --from git+https://github.com/<tu-usuario>/unlam-mcp unlam-mcp`.
+<details>
+<summary><b>Cursor</b></summary>
+
+En `~/.cursor/mcp.json` (o *Settings → MCP → Add new server*):
+
+```json
+{
+  "mcpServers": {
+    "unlam": {
+      "command": "uvx",
+      "args": ["unlam-mcp"]
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>VS Code (Copilot)</b></summary>
+
+```bash
+code --add-mcp "{\"name\":\"unlam\",\"command\":\"uvx\",\"args\":[\"unlam-mcp\"]}"
+```
+
+O a mano, en `.vscode/mcp.json` (o *MCP: Open User Configuration*):
+
+```json
+{
+  "servers": {
+    "unlam": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["unlam-mcp"]
+    }
+  }
+}
+```
+
+Usalo desde el chat en modo *Agent*.
+</details>
+
+<details>
+<summary><b>Windsurf</b></summary>
+
+En `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "unlam": {
+      "command": "uvx",
+      "args": ["unlam-mcp"]
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>Codex (CLI y extensión)</b></summary>
+
+```bash
+codex mcp add unlam -- uvx unlam-mcp
+```
+
+O en `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.unlam]
+command = "uvx"
+args = ["unlam-mcp"]
+```
+</details>
+
+<details>
+<summary><b>Gemini CLI</b></summary>
+
+En `~/.gemini/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "unlam": {
+      "command": "uvx",
+      "args": ["unlam-mcp"]
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>LM Studio, Cline, Zed y otros</b></summary>
+
+Casi todos usan el mismo bloque `mcpServers` de arriba, con `"command": "uvx"` y `"args": ["unlam-mcp"]`. Buscá en la configuración del asistente dónde se agregan servidores MCP.
+</details>
+
+**Si no arranca en Windows**, poné la ruta completa a `uvx.exe` en `command` (la ves con `where uvx`): algunos asistentes no ven el `PATH` de la terminal.
+
+**ChatGPT y las versiones web** de los asistentes sólo aceptan servidores MCP remotos (por HTTP), y éste corre en tu compu para que tu clave no salga de ahí. Usá una app de escritorio o un editor de los de arriba.
+
+`miel_ver_pagina` devuelve imágenes: si tu asistente no las muestra, el resto de las tools anda igual.
+
+Para usar la última versión de GitHub en vez de la publicada, cambiá `uvx unlam-mcp` por `uvx --from git+https://github.com/blasestevez/unlam-mcp unlam-mcp`.
 
 Si cambiás la clave de MIeL, volvé a correr `login`. Para borrar los datos guardados: `unlam-mcp logout`.
 
@@ -155,3 +266,5 @@ Usalo con moderación y respetá el [aviso legal de MIeL](https://miel.unlam.edu
 ## Licencia
 
 MIT
+
+<!-- mcp-name: io.github.blasestevez/unlam-mcp -->

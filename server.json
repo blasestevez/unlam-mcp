@@ -1,0 +1,41 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.blasestevez/unlam-mcp",
+  "description": "MIeL e Intraconsulta de la UNLaM: materias, apuntes, foros, TPs, turnos y historia académica.",
+  "repository": {
+    "url": "https://github.com/blasestevez/unlam-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "unlam-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "MIEL_CARPETA",
+          "description": "Carpeta donde se guardan las descargas (por defecto ~/MIeL).",
+          "isRequired": false,
+          "format": "string"
+        },
+        {
+          "name": "MIEL_USUARIO",
+          "description": "DNI de MIeL. Opcional si corriste 'unlam-mcp login'.",
+          "isRequired": false,
+          "format": "string"
+        },
+        {
+          "name": "MIEL_CLAVE",
+          "description": "Clave de MIeL. Opcional si corriste 'unlam-mcp login'.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
