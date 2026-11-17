@@ -196,6 +196,26 @@ class NotaEvaluacion(Modelo):
     resultado: str | None = Field(default=None, description="Ej. 'TPRMN1PP: 9/10'; ausente si no hay nota.")
 
 
+class Evento(Modelo):
+    """Un evento del calendario de MIeL (parciales, recuperatorios, entregas, defensas...)."""
+
+    fecha: date | None = None
+    materia: str | None = Field(default=None, description="Materia, o None si es del calendario personal.")
+    comision: str | None = None
+    nombre: str
+    lugar: str | None = None
+    horario: str | None = Field(default=None, description="Como lo cargó el docente: '19:00', '1800'...")
+    proximo: bool = Field(description="True si todavía no pasó.")
+
+
+class Grupo(Modelo):
+    id: str | None = Field(
+        default=None, description="Sirve como destinatario en miel_enviar_mensaje para escribirle al grupo."
+    )
+    nombre: str
+    integrantes: list[str] = Field(default_factory=list)
+
+
 class Evaluacion(Modelo):
     id: str
     tipo: str | None = None
@@ -507,6 +527,68 @@ def parse_asistencia(html: str) -> tuple[list[Asistencia], list[NotaEvaluacion]]
             )
         )
     return asistencias, notas
+
+
+# --------------------------------------------------------------------- calendario
+# Página: /calendario/calendario/ (todas las materias juntas)
+# Dos tablas tras <h3>Eventos próximos</h3> y <h3>Eventos pasados</h3>:
+# fecha | 'Materia (Com: 01-2939)' | nombre | lugar | horario | opciones.
+# Ojo: MIeL no cierra los <tr>, así que cada fila queda anidada en la anterior.
+
+_COMISION = re.compile(r"\s*\(Com:\s*([^)]*)\)\s*$")
+
+
+def parse_calendario(html: str) -> list[Evento]:
+    eventos = []
+    for titulo in _sopa(html).find_all("h3"):
+        tabla = titulo.find_next_sibling("table")
+        if tabla is None or "evento" not in _texto(titulo).lower():
+            continue
+        proximo = "pr" in _texto(titulo).lower()  # "Eventos próximos"
+        for fila in tabla.find_all("tr"):
+            celdas = fila.find_all("td", recursive=False)
+            if len(celdas) < 5:
+                continue
+            curso = _texto(celdas[1])
+            comision = _COMISION.search(curso)
+            materia = _COMISION.sub("", curso).strip()
+            eventos.append(
+                Evento(
+                    fecha=_fecha(_texto(celdas[0])),
+                    materia=None if not materia or "personal" in materia.lower() else materia,
+                    comision=comision.group(1).strip() if comision else None,
+                    nombre=_texto(celdas[2]),
+                    lugar=_vacio(_texto(celdas[3])),
+                    horario=_vacio(_texto(celdas[4])),
+                    proximo=proximo,
+                )
+            )
+    return eventos
+
+
+# ------------------------------------------------------------------- mis grupos
+# Página: /portafolio/grupos/comision/{id}
+# Tabla nombre | integrantes (un <div> por persona) | [Enviar mensaje] (…/grupo/{id}).
+
+_ID_GRUPO = re.compile(r"/grupo/(\d+)")
+
+
+def parse_grupos(html: str) -> list[Grupo]:
+    grupos = []
+    for fila in _sopa(html).select("main table tr"):
+        celdas = fila.find_all("td", recursive=False)
+        if len(celdas) < 2:
+            continue
+        enlace = fila.find("a", href=_ID_GRUPO)
+        m = _ID_GRUPO.search(str(enlace["href"])) if enlace else None
+        grupos.append(
+            Grupo(
+                id=m.group(1) if m else None,
+                nombre=_texto(celdas[0]),
+                integrantes=[_texto(d) for d in celdas[1].find_all("div") if _texto(d)],
+            )
+        )
+    return grupos
 
 
 # ------------------------------------------------------------ redactar mensaje

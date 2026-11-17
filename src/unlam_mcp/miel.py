@@ -30,6 +30,8 @@ from .parsers import (
     Contenido,
     Destinatario,
     Evaluacion,
+    Evento,
+    Grupo,
     Materia,
     Mensaje,
     MensajeCompleto,
@@ -417,6 +419,13 @@ class MielClient:
             if t.id == turno_id:
                 return t
         raise MielError(f"No hay un turno con id {turno_id}. Usá miel_turnos para ver los ids.")
+
+    async def calendario(self) -> list[Evento]:
+        """Eventos próximos y pasados de todas las materias (y del calendario personal)."""
+        return parsers.parse_calendario(await self._html("/calendario/calendario/"))
+
+    async def grupos(self, materia_id: str) -> list[Grupo]:
+        return parsers.parse_grupos(await self._html(f"/portafolio/grupos/comision/{materia_id}"))
 
     async def asistencia(self, materia_id: str) -> tuple[list[Asistencia], list[NotaEvaluacion]]:
         """Asistencia clase por clase y notas de las evaluaciones online."""

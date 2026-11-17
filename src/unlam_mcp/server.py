@@ -37,6 +37,8 @@ from .parsers import (
     Contenido,
     Destinatario,
     Evaluacion,
+    Evento,
+    Grupo,
     Materia,
     Mensaje,
     MensajeCompleto,
@@ -126,6 +128,12 @@ class PracticasMateria(Modelo):
     materia: str
     materia_id: str
     practicas: list[Practica]
+
+
+class GruposMateria(Modelo):
+    materia: str
+    materia_id: str
+    grupos: list[Grupo]
 
 
 class AsistenciaMateria(Modelo):
@@ -405,6 +413,47 @@ def crear_servidor(
         with errores_para_el_modelo():
             m = await miel(ctx).materia(materia)
             return await miel(ctx).entregar_practica(m.id, practica_id, Path(archivo), mensaje)
+
+    @mcp.tool(annotations=SOLO_LECTURA)
+    async def miel_calendario(
+        ctx: Ctx,
+        materia: Annotated[
+            str, Field(description="Parte del nombre de la materia, o vacío para todas.")
+        ] = "",
+        incluir_pasados: bool = False,
+    ) -> list[Evento]:
+        """Calendario de MIeL: parciales, recuperatorios, entregas, defensas y otros eventos
+        que cargan los docentes, con fecha, lugar y horario. Es la mejor fuente para
+        "¿cuándo tengo el parcial / el recuperatorio?". Por defecto, sólo los próximos."""
+        with errores_para_el_modelo():
+            eventos = await miel(ctx).calendario()
+            if not incluir_pasados:
+                eventos = [e for e in eventos if e.proximo]
+            if palabras := normalizar(materia).split():
+                eventos = [
+                    e for e in eventos if all(p in normalizar(e.materia or "") for p in palabras)
+                ]
+            return eventos
+
+    @mcp.tool(annotations=SOLO_LECTURA)
+    async def miel_grupos(
+        ctx: Ctx,
+        materia: Annotated[
+            str, Field(description="Materia, o vacío para ver los de todas tus materias.")
+        ] = "",
+    ) -> list[GruposMateria]:
+        """Tus grupos de trabajo en cada materia, con sus integrantes. El `id` del grupo
+        sirve como destinatario en miel_enviar_mensaje para escribirle a todo el grupo."""
+        with errores_para_el_modelo():
+            if materia:
+                materias = [await miel(ctx).materia(materia)]
+            else:
+                materias = [x for x in await miel(ctx).materias() if x.herramienta("portafolio")]
+            resultado = []
+            for m in materias:
+                if grupos := await miel(ctx).grupos(m.id):
+                    resultado.append(GruposMateria(materia=m.nombre, materia_id=m.id, grupos=grupos))
+            return resultado
 
     @mcp.tool(annotations=SOLO_LECTURA)
     async def miel_asistencia(
