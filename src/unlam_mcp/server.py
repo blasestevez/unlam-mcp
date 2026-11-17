@@ -13,7 +13,7 @@ from collections import Counter
 from collections.abc import AsyncIterator, Callable, Iterator
 from contextlib import AbstractAsyncContextManager, asynccontextmanager, contextmanager
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from mcp.server.mcpserver import Context, Image, MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
@@ -22,7 +22,7 @@ from pydantic import Field
 
 from . import __version__, archivos
 from .archivos import Lectura
-from .intraconsulta import Cursada, HistoriaAcademica, IntraError, Regularizadas
+from .intraconsulta import Cursada, HistoriaAcademica, InscripcionExamen, IntraError, Regularizadas
 from .miel import (
     MielClient,
     MielError,
@@ -75,6 +75,7 @@ MateriaParam = Annotated[
 ]
 ContenidoParam = Annotated[str, Field(description="`id` de miel_contenidos. Ej: '300089'.")]
 UrlParam = Annotated[str, Field(description="O la `url` de un adjunto de miel_mensaje.")]
+TipoConstancia = Literal["parcial", "final"]
 TurnoParam = Annotated[str, Field(description="`id` del horario en miel_turnos. Ej: '465'.")]
 
 
@@ -546,6 +547,31 @@ def crear_servidor(
         """Materias regularizadas (cursada aprobada, final pendiente) según Intraconsulta."""
         with errores_para_el_modelo():
             return await miel(ctx).intra.regularizadas()
+
+    def carpeta_intra(ctx: Ctx) -> Path:
+        return miel(ctx).settings.carpeta / "Intraconsulta"
+
+    @mcp.tool(annotations=SOLO_LECTURA)
+    async def intraconsulta_constancias(ctx: Ctx, tipo: TipoConstancia = "parcial") -> list[InscripcionExamen]:
+        """Materias para las que podés bajar una constancia de examen (para presentar en
+        el trabajo, por ejemplo). 'parcial': tus cursadas actuales; 'final': las mesas
+        de final a las que estás inscripto. Se bajan con intraconsulta_descargar_constancia."""
+        with errores_para_el_modelo():
+            return await miel(ctx).intra.inscripciones_examen(tipo)
+
+    @mcp.tool(annotations=ESCRIBE_LOCAL)
+    async def intraconsulta_descargar_constancia(
+        ctx: Ctx,
+        inscripcion: Annotated[str, Field(description="`inscripcion` de intraconsulta_constancias.")],
+        tipo: TipoConstancia = "parcial",
+    ) -> Descarga:
+        """Baja la constancia de examen (PDF) a la compu del usuario. Es gratis, inmediata
+        y no inicia ningún trámite. Los certificados de Intraconsulta (alumno regular,
+        materias aprobadas, analítico) son pagos y este MCP no los maneja: se piden desde
+        Intraconsulta."""
+        with errores_para_el_modelo():
+            ruta = await miel(ctx).intra.descargar_constancia(tipo, inscripcion, carpeta_intra(ctx))
+            return Descarga(nombre=ruta.name, ruta=str(ruta), bytes=ruta.stat().st_size)
 
     @mcp.tool(annotations=SOLO_LECTURA)
     async def miel_novedades(ctx: Ctx) -> list[Novedades]:

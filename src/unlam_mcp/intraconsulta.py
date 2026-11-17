@@ -12,7 +12,9 @@ Usa el mismo usuario y clave que MIeL.
 from __future__ import annotations
 
 import asyncio
+import base64
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -76,6 +78,21 @@ class MateriaRegularizada(Modelo):
 class Regularizadas(Modelo):
     carrera: str
     materias: list[MateriaRegularizada]
+
+
+class InscripcionExamen(Modelo):
+    """Una inscripción para la que se puede bajar la constancia de examen."""
+
+    inscripcion: str = Field(description="Se pasa a intraconsulta_descargar_constancia.")
+    codigo: str
+    materia: str
+    comision: str | None = None
+    dias_horarios: str | None = None
+
+
+# Sólo las constancias de examen: son gratis e inmediatas. Los certificados (alumno
+# regular, materias aprobadas, analítico) son trámites pagos y quedan afuera a propósito.
+CONSTANCIAS = {"parcial": "ConstanciaExamenParcial", "final": "ConstanciaExamenFinal"}
 
 
 # ----------------------------------------------------------------- cliente
@@ -157,6 +174,32 @@ class IntraClient:
             for c in await self._get("MateriasRegularizadas/GetMateriasRegularizadasPersona")
         ]
 
+    # =============================================================== constancias
+
+    async def inscripciones_examen(self, tipo: str) -> list[InscripcionExamen]:
+        """Inscripciones para las que hay constancia de examen ('parcial' o 'final')."""
+        return [
+            InscripcionExamen(
+                inscripcion=str(i.get("inscripcion") or ""),
+                codigo=str(i.get("codigo") or ""),
+                materia=_titulo(i.get("nombre")),
+                comision=_vacio(i.get("cursoComision")),
+                dias_horarios=_vacio(i.get("diasHorarios")),
+            )
+            for i in await self._get(f"{_constancia(tipo)}/inscripciones")
+        ]
+
+    async def descargar_constancia(self, tipo: str, inscripcion: str, carpeta: Path) -> Path:
+        validas = {i.inscripcion: i for i in await self.inscripciones_examen(tipo)}
+        if inscripcion not in validas:
+            raise IntraError(
+                f"No hay una inscripción {inscripcion} con constancia de examen {tipo}. "
+                "Usá intraconsulta_constancias para ver las disponibles."
+            )
+        datos = await self._get_datos(f"{_constancia(tipo)}/descargar/{inscripcion}")
+        nombre = f"Constancia examen {tipo} - {validas[inscripcion].materia}.pdf"
+        return _guardar_pdf(datos, carpeta / nombre)
+
     # ================================================================== sesión
 
     async def login(self) -> None:
@@ -191,7 +234,13 @@ class IntraClient:
             self._logueado = True
 
     async def _get(self, endpoint: str) -> list[dict[str, Any]]:
-        """GET a la API nueva; reloguea una vez si la sesión venció. Devuelve `data`."""
+        """`data` de un endpoint que devuelve una lista."""
+        datos = await self._get_datos(endpoint)
+        return datos if isinstance(datos, list) else []
+
+    async def _get_datos(self, endpoint: str) -> Any:
+        """GET a la API nueva (sólo lectura); reloguea una vez si la sesión venció.
+        Devuelve `data`."""
         for intento in range(2):
             if not self._logueado:
                 await self.login()
@@ -204,14 +253,41 @@ class IntraClient:
             if r.status_code == 401 and intento == 0:
                 self._logueado = False
                 continue
+            try:
+                cuerpo = r.json()
+            except ValueError:
+                cuerpo = {}
             if r.status_code != 200:
-                raise IntraError(f"Intraconsulta respondió con error {r.status_code} en {endpoint}.")
-            datos = r.json().get("data")
-            return datos if isinstance(datos, list) else []
+                detalle = cuerpo.get("mensaje") if isinstance(cuerpo, dict) else None
+                raise IntraError(
+                    f"Intraconsulta respondió con error {r.status_code} en {endpoint}"
+                    + (f": {detalle}" if detalle else ".")
+                )
+            return cuerpo.get("data") if isinstance(cuerpo, dict) else None
         raise IntraError("No se pudo mantener la sesión de Intraconsulta.")
 
 
 # ==================================================================== helpers
+
+
+def _constancia(tipo: str) -> str:
+    if tipo not in CONSTANCIAS:
+        raise IntraError("El tipo de constancia es 'parcial' o 'final'.")
+    return CONSTANCIAS[tipo]
+
+
+def _guardar_pdf(datos: Any, ruta: Path) -> Path:
+    """La API devuelve el PDF en base64 dentro de `data.fileBytes`."""
+    crudo = datos.get("fileBytes") if isinstance(datos, dict) else datos
+    try:
+        contenido = base64.b64decode(str(crudo or ""), validate=True)
+    except ValueError as e:
+        raise IntraError("Intraconsulta no devolvió un PDF.") from e
+    if not contenido.startswith(b"%PDF"):
+        raise IntraError("Intraconsulta no devolvió un PDF.")
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    ruta.write_bytes(contenido)
+    return ruta
 
 
 def _vacio(valor: object) -> str | None:

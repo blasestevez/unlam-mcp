@@ -51,6 +51,10 @@ Con la misma cuenta (DNI y clave de MIeL), también lee [Intraconsulta](https://
 | `intraconsulta_materias_en_curso` | Las materias en las que estás inscripto este cuatrimestre: comisión, día y horario, aula y modalidad. |
 | `intraconsulta_historia_academica` | Tus materias aprobadas con nota, fecha y acta, y un promedio simple calculado a partir de ellas. |
 | `intraconsulta_regularizadas` | Las materias con la cursada aprobada y el final pendiente. |
+| `intraconsulta_constancias` | Las materias (o mesas de final) para las que podés bajar una constancia de examen. |
+| `intraconsulta_descargar_constancia` | Baja la constancia de examen en PDF a `MIEL_CARPETA/Intraconsulta`. Es gratis y no inicia ningún trámite. |
+
+Los certificados de Intraconsulta (alumno regular, materias aprobadas, analítico parcial) son trámites **pagos**, así que este MCP no los pide ni los lista: se gestionan desde Intraconsulta.
 
 ### Hacer cosas a tu nombre
 
@@ -139,7 +143,7 @@ Si algo deja de andar, lo más probable es que MIeL haya cambiado el HTML de una
 
 ## Próximamente
 
-- [ ] Intraconsulta: constancias de examen e inscripciones
+- [ ] Intraconsulta: inscripciones a materias y finales
 
 ## Créditos
 
