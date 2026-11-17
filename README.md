@@ -1,91 +1,99 @@
 # unlam-mcp
 
-Conectá tu asistente de IA (Claude, Cursor, VS Code, Codex, Gemini CLI o cualquiera compatible con [MCP](https://modelcontextprotocol.io)) a tu cuenta de **MIeL** y de **Intraconsulta** de la UNLaM, y preguntale por tus materias en lenguaje natural:
+Servidor [MCP](https://modelcontextprotocol.io) (Model Context Protocol) para la UNLaM. Expone **MIeL** (el campus virtual) e **Intraconsulta** como herramientas para asistentes de IA, de modo que el estudiante pueda consultar sus materias en lenguaje natural. Es compatible con cualquier cliente MCP: Claude, Cursor, VS Code (Copilot), Windsurf, Codex, Gemini CLI, entre otros.
 
-- *"¿Qué subieron esta semana en Programación Avanzada?"*
-- *"Bajame el programa de Base de Datos."*
-- *"¿Qué respondió el profe en el foro del TP?"*
-- *"¿Qué tengo que entregar esta semana y qué notas me pusieron?"*
-- *"¿Hay algo nuevo en MIeL?"*
-- *"Resumime el apunte de la unidad 3 de Redes."*
-- *"¿Cuándo tengo los recuperatorios?"*
-- *"¿Cómo vengo con las faltas en Redes?"*
-- *"Anotame en el turno de las 18 del recuperatorio."*
-- *"Mandale un mensaje a mi grupo de Taller Web con el informe adjunto."*
+Ejemplos de consultas:
+
+- *"¿Qué contenidos se publicaron esta semana en Programación Avanzada?"*
+- *"Descargá el programa de Base de Datos."*
+- *"¿Qué respondió el docente en el foro del TP?"*
+- *"¿Qué entregas tengo esta semana y qué notas me asignaron?"*
+- *"¿Hay novedades en MIeL?"*
+- *"Resumí el apunte de la unidad 3 de Redes."*
+- *"¿Cuándo son los recuperatorios?"*
+- *"¿Cuál es mi asistencia en Redes?"*
+- *"Reservá el turno de las 18 h del recuperatorio."*
+- *"Enviá un mensaje a mi grupo de Taller Web con el informe adjunto."*
 - *"Entregá este PDF en el TP 1 de Base de Datos."*
-- *"¿Qué promedio tengo y cuántas materias aprobé?"*
+- *"¿Cuál es mi promedio y cuántas materias tengo aprobadas?"*
 
 > [!NOTE]
-> Proyecto no oficial, sin relación con la UNLaM. Casi todo es de lectura. Las únicas acciones que hace a tu nombre son **reservar o cancelar turnos, mandar mensajes y entregar prácticas**, y sólo cuando se lo pedís. El foro y las evaluaciones son de solo lectura: nunca publica en el foro ni entra a rendir una evaluación.
+> Proyecto no oficial, sin relación con la UNLaM. La mayoría de las herramientas son de solo lectura. Las únicas operaciones de escritura son **reservar y cancelar turnos, enviar mensajes y entregar prácticas**, y se ejecutan únicamente a pedido del usuario. El foro y las evaluaciones son de solo lectura: el servidor no publica en el foro ni inicia evaluaciones.
 
-## Qué puede hacer
+## Herramientas
 
-### Consultar
+### Consulta (MIeL)
 
-| Tool | Qué hace |
+| Herramienta | Descripción |
 |---|---|
-| `miel_novedades` | Lo nuevo en todas tus materias: archivos, mensajes sin leer y foros con mensajes nuevos. |
-| `miel_materias` | Tus materias, con comisión y pendientes (mensajes sin leer, etc.). |
-| `miel_calendario` | Parciales, recuperatorios, entregas y defensas de todas tus materias, con fecha, lugar y horario. |
-| `miel_contenidos` | Los archivos y enlaces que subieron los docentes, con carpeta, fecha y si son nuevos. |
-| `miel_leer` | Lee un apunte (PDF, Word, PowerPoint o texto) para resumirlo o responder sobre él. |
-| `miel_ver_pagina` | Muestra una página de un PDF como imagen: para escaneados, gráficos o fórmulas. |
-| `miel_descargar` | Baja un archivo (o el adjunto de un mensaje) a tu compu. |
-| `miel_foro` | Los temas del foro de una materia, con mensajes sin leer. |
-| `miel_foro_tema` | Los mensajes de un tema del foro. |
-| `miel_mensajes` | La bandeja de mensajes de una materia: avisos de los docentes, correcciones. |
-| `miel_mensaje` | Un mensaje completo, con sus adjuntos. |
-| `miel_destinatarios` | A quiénes les podés escribir en una materia: docentes, compañeros y tu grupo. |
-| `miel_practicas` | Tus TPs y parciales: vencimiento, si entregaste, estado y nota. De una materia o de todas. |
-| `miel_asistencia` | Tu asistencia clase por clase, con un resumen, y las notas de las evaluaciones online. |
-| `miel_grupos` | Tus grupos de trabajo en cada materia, con sus integrantes. |
-| `miel_evaluaciones` | Las evaluaciones online de una materia y si están habilitadas. Sólo las lista. |
-| `miel_turnos` | Los turnos de una materia (recuperatorios, consultas): fecha, lugar, vacantes y si ya reservaste. |
+| `miel_novedades` | Novedades de todas las materias: archivos nuevos, mensajes sin leer y foros con actividad. |
+| `miel_materias` | Materias del usuario, con comisión y elementos pendientes. |
+| `miel_calendario` | Parciales, recuperatorios, entregas y defensas de todas las materias, con fecha, lugar y horario. |
+| `miel_contenidos` | Archivos y enlaces publicados por los docentes, con carpeta, fecha e indicador de novedad. |
+| `miel_leer` | Extrae el texto de un apunte (PDF, Word, PowerPoint o texto plano) para su análisis. |
+| `miel_ver_pagina` | Renderiza una página de un PDF como imagen, para documentos escaneados, gráficos o fórmulas. |
+| `miel_descargar` | Descarga un archivo, o el adjunto de un mensaje, al equipo local. |
+| `miel_foro` | Temas del foro de una materia, con cantidad de mensajes sin leer. |
+| `miel_foro_tema` | Mensajes de un tema del foro. |
+| `miel_mensajes` | Bandeja de mensajes de una materia: avisos y correcciones de los docentes. |
+| `miel_mensaje` | Contenido completo de un mensaje, con sus adjuntos. |
+| `miel_destinatarios` | Destinatarios disponibles en una materia: docentes, compañeros y grupo. |
+| `miel_practicas` | Trabajos prácticos y parciales: vencimiento, estado de entrega, estado de corrección y nota. Por materia o para todas. |
+| `miel_asistencia` | Asistencia por clase con resumen, y notas de las evaluaciones online. |
+| `miel_grupos` | Grupos de trabajo de cada materia, con sus integrantes. |
+| `miel_evaluaciones` | Evaluaciones online de una materia y su estado de habilitación. Solo las lista. |
+| `miel_turnos` | Turnos de una materia (recuperatorios, consultas): fecha, lugar, vacantes y estado de la reserva. |
 
-### Intraconsulta
+### Consulta (Intraconsulta)
 
-Con la misma cuenta (DNI y clave de MIeL), también lee [Intraconsulta](https://intraconsulta.unlam.edu.ar):
+Utiliza las mismas credenciales que MIeL (DNI y clave) para acceder a [Intraconsulta](https://intraconsulta.unlam.edu.ar):
 
-| Tool | Qué hace |
+| Herramienta | Descripción |
 |---|---|
-| `intraconsulta_materias_en_curso` | Las materias en las que estás inscripto este cuatrimestre: comisión, día y horario, aula y modalidad. |
-| `intraconsulta_historia_academica` | Tus materias aprobadas con nota, fecha, acta y origen (promoción, examen o equivalencia), y un promedio simple calculado a partir de ellas. |
-| `intraconsulta_descargar_historia_academica` | Baja el PDF de la historia académica a `MIEL_CARPETA/Intraconsulta`. Es gratis y no inicia ningún trámite. |
-| `intraconsulta_regularizadas` | Las materias con la cursada aprobada y el final pendiente. |
-| `intraconsulta_constancias` | Las materias (o mesas de final) para las que podés bajar una constancia de examen. |
-| `intraconsulta_descargar_constancia` | Baja la constancia de examen en PDF a `MIEL_CARPETA/Intraconsulta`. Es gratis y no inicia ningún trámite. |
+| `intraconsulta_materias_en_curso` | Materias inscriptas en el cuatrimestre actual: comisión, día y horario, aula y modalidad. |
+| `intraconsulta_historia_academica` | Materias aprobadas con nota, fecha, acta y origen (promoción, examen o equivalencia), y el promedio simple calculado sobre ellas. |
+| `intraconsulta_descargar_historia_academica` | Descarga el PDF de la historia académica en `MIEL_CARPETA/Intraconsulta`. No tiene costo ni inicia ningún trámite. |
+| `intraconsulta_regularizadas` | Materias con cursada aprobada y examen final pendiente. |
+| `intraconsulta_constancias` | Materias o mesas de final para las que hay constancia de examen disponible. |
+| `intraconsulta_descargar_constancia` | Descarga la constancia de examen en PDF en `MIEL_CARPETA/Intraconsulta`. No tiene costo ni inicia ningún trámite. |
 
-Los certificados de Intraconsulta (alumno regular, materias aprobadas, analítico parcial) son trámites **pagos**, así que este MCP no los pide ni los lista: se gestionan desde Intraconsulta.
+Los certificados de Intraconsulta (alumno regular, materias aprobadas, analítico parcial) son trámites **arancelados**, por lo que este servidor no los solicita ni los lista. Deben gestionarse desde Intraconsulta.
 
-### Hacer cosas a tu nombre
+### Operaciones de escritura
 
-| Tool | Qué hace |
+| Herramienta | Descripción |
 |---|---|
-| `miel_reservar_turno` | Reserva un turno. Si ya tenías otro del mismo evento, MIeL lo cancela (el asistente te avisa antes). |
+| `miel_reservar_turno` | Reserva un turno. Si existe una reserva previa para el mismo evento, MIeL la cancela; el asistente lo informa antes de ejecutar la operación. |
 | `miel_cancelar_turno` | Cancela un turno reservado y libera la vacante. |
-| `miel_enviar_mensaje` | Manda un mensaje por la mensajería de la materia, con un adjunto opcional (hasta 40 MB). Los destinatarios van por nombre o por grupo. |
-| `miel_entregar_practica` | Entrega un TP del portafolio subiendo un archivo (hasta 40 MB). |
+| `miel_enviar_mensaje` | Envía un mensaje por la mensajería de la materia, con un adjunto opcional (máximo 40 MB). Los destinatarios se indican por nombre o por grupo. |
+| `miel_entregar_practica` | Entrega un trabajo práctico del portafolio mediante la carga de un archivo (máximo 40 MB). |
 
-Después de cada acción vuelve a leer MIeL para confirmar que se hizo: si MIeL no la muestra, avisa en vez de dar por hecho que salió. Mensajes y entregas no se pueden deshacer.
+Luego de cada operación, el servidor vuelve a consultar MIeL para verificar el resultado. Si el cambio no se refleja, se informa el error en lugar de asumir que la operación fue exitosa. El envío de mensajes y las entregas son irreversibles.
 
-Algunas cosas se marcan como vistas en MIeL al consultarlas, igual que si entraras desde el navegador: abrir un mensaje o un tema del foro los marca como leídos, y listar los contenidos deja de mostrar los nuevos como nuevos.
+Algunas consultas modifican el estado de lectura en MIeL, igual que al navegar desde el sitio: abrir un mensaje o un tema del foro los marca como leídos, y listar los contenidos quita el indicador de novedad.
 
-Podés nombrar la materia como quieras: `"prog avanzada"`, `"base de datos"` o el código (`3630`).
+El parámetro `materia` acepta el nombre completo o parcial (`"prog avanzada"`, `"base de datos"`) o el código de la materia (`3630`), sin distinción de acentos.
 
 ## Instalación
 
-Funciona con cualquier asistente que acepte servidores MCP locales (por STDIO): Claude, Cursor, VS Code con Copilot, Windsurf, Codex, Gemini CLI, LM Studio, Cline y otros.
+### Requisitos
 
-1. Instalá [uv](https://docs.astral.sh/uv/getting-started/installation/) (una sola vez).
-2. Iniciá sesión con tu usuario y clave de MIeL:
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) (gestiona Python y las dependencias).
+- Un cliente compatible con servidores MCP locales por transporte STDIO.
 
-   ```bash
-   uvx unlam-mcp login
-   ```
+### 1. Configurar credenciales
 
-   Te los pide en la terminal, prueba entrar a MIeL y los guarda en el gestor de credenciales de tu compu (el Administrador de credenciales en Windows, el Llavero en macOS). No quedan en ningún archivo de texto ni en la config del asistente.
+```bash
+uvx unlam-mcp login
+```
 
-3. Agregá el MCP a tu asistente. En todos los casos el comando es `uvx unlam-mcp`.
+El comando solicita el usuario y la clave de MIeL, valida el acceso y almacena las credenciales en el gestor de credenciales del sistema operativo (Administrador de credenciales en Windows, Llavero en macOS, Secret Service en Linux). Las credenciales no se guardan en archivos de texto ni en la configuración del cliente.
+
+Si la clave de MIeL cambia, se debe ejecutar `login` nuevamente. Para eliminar las credenciales almacenadas: `uvx unlam-mcp logout`.
+
+### 2. Registrar el servidor en el cliente
+
+En todos los clientes, el comando de inicio es `uvx unlam-mcp`.
 
 <details>
 <summary><b>Claude Code</b></summary>
@@ -98,7 +106,7 @@ claude mcp add unlam -- uvx unlam-mcp
 <details>
 <summary><b>Claude Desktop</b></summary>
 
-En *Settings → Developer → Edit Config*, agregá:
+En *Settings → Developer → Edit Config*, agregar:
 
 ```json
 {
@@ -111,13 +119,13 @@ En *Settings → Developer → Edit Config*, agregá:
 }
 ```
 
-y reiniciá Claude Desktop.
+Reiniciar Claude Desktop para aplicar los cambios.
 </details>
 
 <details>
 <summary><b>Cursor</b></summary>
 
-En `~/.cursor/mcp.json` (o *Settings → MCP → Add new server*):
+En `~/.cursor/mcp.json` (o desde *Settings → MCP → Add new server*):
 
 ```json
 {
@@ -138,7 +146,7 @@ En `~/.cursor/mcp.json` (o *Settings → MCP → Add new server*):
 code --add-mcp "{\"name\":\"unlam\",\"command\":\"uvx\",\"args\":[\"unlam-mcp\"]}"
 ```
 
-O a mano, en `.vscode/mcp.json` (o *MCP: Open User Configuration*):
+Alternativamente, en `.vscode/mcp.json` (o desde *MCP: Open User Configuration*):
 
 ```json
 {
@@ -152,7 +160,7 @@ O a mano, en `.vscode/mcp.json` (o *MCP: Open User Configuration*):
 }
 ```
 
-Usalo desde el chat en modo *Agent*.
+Las herramientas están disponibles en el chat en modo *Agent*.
 </details>
 
 <details>
@@ -179,7 +187,7 @@ En `~/.codeium/windsurf/mcp_config.json`:
 codex mcp add unlam -- uvx unlam-mcp
 ```
 
-O en `~/.codex/config.toml`:
+Alternativamente, en `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.unlam]
@@ -206,62 +214,67 @@ En `~/.gemini/settings.json`:
 </details>
 
 <details>
-<summary><b>LM Studio, Cline, Zed y otros</b></summary>
+<summary><b>Otros clientes (LM Studio, Cline, Zed, etc.)</b></summary>
 
-Casi todos usan el mismo bloque `mcpServers` de arriba, con `"command": "uvx"` y `"args": ["unlam-mcp"]`. Buscá en la configuración del asistente dónde se agregan servidores MCP.
+La mayoría de los clientes utiliza el mismo bloque `mcpServers`, con `"command": "uvx"` y `"args": ["unlam-mcp"]`. Consultar la documentación del cliente para conocer la ubicación del archivo de configuración.
 </details>
 
-**Si no arranca en Windows**, poné la ruta completa a `uvx.exe` en `command` (la ves con `where uvx`): algunos asistentes no ven el `PATH` de la terminal.
+### Notas de compatibilidad
 
-**ChatGPT y las versiones web** de los asistentes sólo aceptan servidores MCP remotos (por HTTP), y éste corre en tu compu para que tu clave no salga de ahí. Usá una app de escritorio o un editor de los de arriba.
+- **Windows:** si el cliente no encuentra `uvx`, indicar la ruta absoluta del ejecutable en `command` (se obtiene con `where uvx`). Algunos clientes no heredan el `PATH` de la terminal.
+- **ChatGPT y clientes web:** solo admiten servidores MCP remotos (HTTP). Este servidor se ejecuta localmente para que las credenciales no salgan del equipo, por lo que requiere un cliente de escritorio o un editor.
+- **Contenido de imagen:** `miel_ver_pagina` devuelve imágenes. En clientes sin soporte para imágenes, el resto de las herramientas funciona con normalidad.
+- **Versión de desarrollo:** para usar la última versión del repositorio en lugar de la publicada en PyPI, reemplazar `uvx unlam-mcp` por `uvx --from git+https://github.com/blasestevez/unlam-mcp unlam-mcp`.
 
-`miel_ver_pagina` devuelve imágenes: si tu asistente no las muestra, el resto de las tools anda igual.
+### Variables de entorno
 
-Para usar la última versión de GitHub en vez de la publicada, cambiá `uvx unlam-mcp` por `uvx --from git+https://github.com/blasestevez/unlam-mcp unlam-mcp`.
-
-Si cambiás la clave de MIeL, volvé a correr `login`. Para borrar los datos guardados: `unlam-mcp logout`.
-
-### Opciones
-
-| Variable | Por defecto | Para qué |
+| Variable | Valor por defecto | Descripción |
 |---|---|---|
-| `MIEL_CARPETA` | `~/MIeL` | Dónde se guardan las descargas. |
-| `MIEL_USUARIO`, `MIEL_CLAVE` | los de `login` | Para usar otras credenciales sin `login` (por ejemplo, en un servidor sin gestor de credenciales). |
+| `MIEL_CARPETA` | `~/MIeL` | Directorio de destino de las descargas. |
+| `MIEL_USUARIO`, `MIEL_CLAVE` | Las credenciales de `login` | Credenciales alternativas, para entornos sin gestor de credenciales (por ejemplo, un servidor). |
 
-Si corrés el proyecto desde una copia local (`uv run unlam-mcp`), también podés ponerlas en un archivo `.env` (copiá `.env.example`).
+Al ejecutar el proyecto desde una copia local (`uv run unlam-mcp`), las variables también pueden definirse en un archivo `.env` (ver `.env.example`).
 
-## Para quien quiera colaborar
+## Desarrollo
 
-El código son cinco archivos:
+### Estructura
 
 ```
 src/unlam_mcp/
-├── server.py         # las tools que ve el asistente
-├── miel.py           # entra a MIeL: login, páginas, descargas
-├── parsers.py        # lee el HTML de MIeL y lo convierte en datos
-├── intraconsulta.py  # entra a Intraconsulta y lee su API JSON
-└── archivos.py       # saca el texto de PDF, Word y PowerPoint, y páginas como imagen
+├── server.py         # definición de las herramientas MCP
+├── miel.py           # cliente HTTP de MIeL: autenticación, páginas y descargas
+├── parsers.py        # parseo del HTML de MIeL a estructuras de datos
+├── intraconsulta.py  # cliente de la API JSON de Intraconsulta
+└── archivos.py       # extracción de texto de PDF, Word y PowerPoint, y renderizado de páginas
 ```
 
-Intraconsulta nueva tiene una API JSON (`/backend/api/`), pero los alumnos inician sesión por la versión vieja (`alumno2.unlam.edu.ar`). Ésta redirige a la nueva con un `transferToken`, que se canjea en `Login/system-login` por la cookie de sesión.
+Para ejecutar desde el código fuente: clonar el repositorio y ejecutar `uv run unlam-mcp`.
 
-Para correrlo desde tu copia: `git clone`, después `uv run unlam-mcp`.
+### Arquitectura
 
-MIeL no tiene una API con datos: las páginas vienen armadas desde el servidor, así que se leen del HTML. Las acciones son los mismos formularios que usa la página (por ejemplo `/turnos/event/reservarTurno/`, `/mensajeria/event/enviarMensaje/` o `/portafolio/event/nuevaEntrega/`), y después de cada una se vuelve a leer la página para confirmarla.
+**MIeL** no expone una API de datos: las páginas se generan del lado del servidor, por lo que la información se obtiene parseando el HTML. Las operaciones de escritura utilizan los mismos formularios que el sitio (por ejemplo `/turnos/event/reservarTurno/`, `/mensajeria/event/enviarMensaje/` o `/portafolio/event/nuevaEntrega/`), y cada una se verifica con una nueva lectura de la página.
 
-Para sumar algo nuevo: el parser de la página va en `parsers.py`, el método que la pide en `MielClient` (`miel.py`) y la tool en `server.py`, con nombre `miel_<accion>`. El docstring de la tool es lo que lee el asistente: contá para qué sirve y de dónde salen los parámetros.
+**Intraconsulta** dispone de una API JSON (`/backend/api/`), pero la autenticación de alumnos se realiza a través de la versión anterior (`alumno2.unlam.edu.ar`). Esta redirige a la versión nueva con un `transferToken`, que se intercambia en `Login/system-login` por la cookie de sesión.
 
-Si algo deja de andar, lo más probable es que MIeL haya cambiado el HTML de una página: el arreglo va en `parsers.py`.
+### Agregar una herramienta
 
-## Próximamente
+1. El parser de la página va en `parsers.py`.
+2. El método que realiza la solicitud va en `MielClient` (`miel.py`).
+3. La herramienta va en `server.py`, con el nombre `miel_<accion>`.
 
-- [ ] Intraconsulta: inscripciones a materias y finales
+El docstring de la herramienta es la descripción que recibe el modelo: debe indicar su propósito y el origen de cada parámetro.
+
+Ante un fallo en una herramienta existente, la causa más probable es un cambio en el HTML de MIeL; la corrección corresponde a `parsers.py`.
+
+## Hoja de ruta
+
+- [ ] Intraconsulta: inscripción a materias y a mesas de final.
 
 ## Créditos
 
-Inspirado en [TBalles/miel-mcp](https://github.com/TBalles/miel-mcp) y [nialvape/utn-mcp](https://github.com/nialvape/utn-mcp).
+Basado en [TBalles/miel-mcp](https://github.com/TBalles/miel-mcp) y [nialvape/utn-mcp](https://github.com/nialvape/utn-mcp).
 
-Usalo con moderación y respetá el [aviso legal de MIeL](https://miel.unlam.edu.ar/principal/legal/).
+El uso de este servidor debe ser moderado y respetar el [aviso legal de MIeL](https://miel.unlam.edu.ar/principal/legal/).
 
 ## Licencia
 
