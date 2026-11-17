@@ -333,8 +333,47 @@ class MielClient:
 
     # ========================================================= portafolio y más
 
-    async def practicas(self, materia_id: str) -> list[Practica]:
-        return parsers.parse_practicas(await self._html(f"/portafolio/practicas/comision/{materia_id}"))
+    async def practicas(self, materia_id: str, *, actualizado: bool = False) -> list[Practica]:
+        ruta = f"/portafolio/practicas/comision/{materia_id}"
+        if actualizado:
+            self._cache.pop(ruta, None)
+        return parsers.parse_practicas(await self._html(ruta))
+
+    async def entregar_practica(
+        self, materia_id: str, practica_id: str, archivo: Path, mensaje: str = ""
+    ) -> Practica:
+        """Sube un archivo como entrega de una práctica del portafolio (a todos los
+        docentes de la comisión). Devuelve la práctica ya con la fecha de entrega."""
+        practica = next(
+            (p for p in await self.practicas(materia_id, actualizado=True) if p.id == practica_id),
+            None,
+        )
+        if practica is None:
+            raise MielError(f"No hay una práctica con id {practica_id}. Usá miel_practicas.")
+        archivo = archivo.expanduser()
+        if not archivo.is_file():
+            raise MielError(f"No existe el archivo {archivo}.")
+        if archivo.stat().st_size > _MAX_ADJUNTO:
+            raise MielError("MIeL no acepta entregas de más de 40 MB.")
+
+        await self._postear(
+            f"/portafolio/event/nuevaEntrega/comision/{materia_id}",
+            {"codPractica": practica_id, "tutorDestinatario": "0", "observaciones": mensaje.strip()},
+            files={"archivo": (archivo.name, await asyncio.to_thread(archivo.read_bytes))},
+        )
+        # Se confirma viendo el archivo en la página de entregas de la práctica.
+        self._cache.pop(f"/portafolio/entregas/comision/{materia_id}/id/{practica_id}", None)
+        if not await self._en_entregas(materia_id, practica_id, archivo.name):
+            raise MielError("MIeL no muestra la entrega. Revisá la práctica en MIeL.")
+        return next(
+            (p for p in await self.practicas(materia_id, actualizado=True) if p.id == practica_id),
+            practica,
+        )
+
+    async def _en_entregas(self, materia_id: str, practica_id: str, nombre: str) -> bool:
+        """Si el archivo figura en la página de entregas de la práctica."""
+        html = await self._html(f"/portafolio/entregas/comision/{materia_id}/id/{practica_id}")
+        return nombre in html
 
     async def turnos(self, materia_id: str, *, actualizado: bool = False) -> list[Turno]:
         ruta = f"/turnos/turnos/comision/{materia_id}"

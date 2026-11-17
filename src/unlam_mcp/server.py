@@ -378,6 +378,21 @@ def crear_servidor(
                 for m in materias
             ]
 
+    @mcp.tool(annotations=ENVIA)
+    async def miel_entregar_practica(
+        ctx: Ctx,
+        materia: MateriaParam,
+        practica_id: Annotated[str, Field(description="`id` de miel_practicas. Ej: '48882'.")],
+        archivo: Annotated[str, Field(description="Ruta del archivo local a entregar (máx. 40 MB).")],
+        mensaje: Annotated[str, Field(description="Mensaje opcional para el docente.")] = "",
+    ) -> Practica:
+        """Entrega una práctica del portafolio (TP, ejercicio) subiendo un archivo, a todos
+        los docentes de la comisión. No se puede deshacer: usalo sólo si el usuario lo
+        pidió. Devuelve la práctica con la fecha de entrega."""
+        with errores_para_el_modelo():
+            m = await miel(ctx).materia(materia)
+            return await miel(ctx).entregar_practica(m.id, practica_id, Path(archivo), mensaje)
+
     @mcp.tool(annotations=SOLO_LECTURA)
     async def miel_evaluaciones(ctx: Ctx, materia: MateriaParam) -> Evaluaciones:
         """Evaluaciones online de una materia (parciales, cuestionarios): tipo, título, si
