@@ -180,6 +180,22 @@ class Turno(Modelo):
     )
 
 
+class Asistencia(Modelo):
+    fecha: date | None = None
+    estado: str = Field(description="Como lo muestra MIeL: 'Presente', 'Ausente', 'Tarde', 'Justificado'...")
+    modalidad: str | None = Field(default=None, description="'Presencial' o 'Virtual'.")
+
+
+class NotaEvaluacion(Modelo):
+    """Resultado de una evaluación online (cuestionarios, parciales en MIeL)."""
+
+    titulo: str
+    tipo: str | None = None
+    inicio: datetime | None = None
+    fin: datetime | None = None
+    resultado: str | None = Field(default=None, description="Ej. 'TPRMN1PP: 9/10'; ausente si no hay nota.")
+
+
 class Evaluacion(Modelo):
     id: str
     tipo: str | None = None
@@ -457,6 +473,40 @@ def parse_evaluaciones(html: str) -> list[Evaluacion]:
             )
         )
     return evaluaciones
+
+
+# ------------------------------------------------- asistencia, notas y certificados
+# Página: /portafolio/notas/comision/{id}
+# Asistencia: un div.asistencia-alumno por clase con tres divs: fecha | estado | modalidad.
+# Notas: tabla título | tipo | inicio | fin | resultados ('---' si no hay nota).
+
+
+def parse_asistencia(html: str) -> tuple[list[Asistencia], list[NotaEvaluacion]]:
+    doc = _sopa(html)
+    asistencias = []
+    for clase in doc.select(".asistencia-alumno"):
+        partes = [_texto(d) for d in clase.find_all("div", recursive=False)] + ["", "", ""]
+        if not partes[1]:
+            continue
+        asistencias.append(
+            Asistencia(fecha=_fecha(partes[0]), estado=partes[1], modalidad=_vacio(partes[2]))
+        )
+
+    notas = []
+    for fila in doc.select("main table tr"):
+        celdas = fila.find_all("td", recursive=False)
+        if len(celdas) < 5:
+            continue
+        notas.append(
+            NotaEvaluacion(
+                titulo=_texto(celdas[0]),
+                tipo=_vacio(_texto(celdas[1])),
+                inicio=_fecha_hora(_texto(celdas[2])),
+                fin=_fecha_hora(_texto(celdas[3])),
+                resultado=_vacio(" ".join(celdas[4].get_text(" ").split())),
+            )
+        )
+    return asistencias, notas
 
 
 # ------------------------------------------------------------ redactar mensaje

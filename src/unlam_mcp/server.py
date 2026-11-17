@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
+from collections import Counter
 from collections.abc import AsyncIterator, Callable, Iterator
 from contextlib import AbstractAsyncContextManager, asynccontextmanager, contextmanager
 from pathlib import Path
@@ -32,6 +33,7 @@ from .miel import (
 )
 from .parsers import (
     Modelo,
+    Asistencia,
     Contenido,
     Destinatario,
     Evaluacion,
@@ -39,6 +41,7 @@ from .parsers import (
     Mensaje,
     MensajeCompleto,
     MensajeForo,
+    NotaEvaluacion,
     Practica,
     TemaForo,
     Turno,
@@ -123,6 +126,16 @@ class PracticasMateria(Modelo):
     materia: str
     materia_id: str
     practicas: list[Practica]
+
+
+class AsistenciaMateria(Modelo):
+    materia: str
+    materia_id: str
+    resumen: dict[str, int] = Field(
+        default_factory=dict, description="Clases por estado, ej. {'Presente': 9, 'Ausente': 1}."
+    )
+    asistencias: list[Asistencia] = Field(default_factory=list)
+    notas: list[NotaEvaluacion] = Field(default_factory=list)
 
 
 class Evaluaciones(Modelo):
@@ -392,6 +405,35 @@ def crear_servidor(
         with errores_para_el_modelo():
             m = await miel(ctx).materia(materia)
             return await miel(ctx).entregar_practica(m.id, practica_id, Path(archivo), mensaje)
+
+    @mcp.tool(annotations=SOLO_LECTURA)
+    async def miel_asistencia(
+        ctx: Ctx,
+        materia: Annotated[
+            str, Field(description="Materia, o vacío para ver las de todas tus materias.")
+        ] = "",
+    ) -> list[AsistenciaMateria]:
+        """Asistencia clase por clase (presente, ausente, tarde, justificado; presencial o
+        virtual) con un resumen por estado, y las notas de las evaluaciones online. Sirve
+        para "¿cómo vengo con las faltas?". MIeL no informa el mínimo de asistencia exigido."""
+        with errores_para_el_modelo():
+            if materia:
+                materias = [await miel(ctx).materia(materia)]
+            else:
+                materias = [x for x in await miel(ctx).materias() if x.herramienta("portafolio")]
+            resultado = []
+            for m in materias:
+                asistencias, notas = await miel(ctx).asistencia(m.id)
+                resultado.append(
+                    AsistenciaMateria(
+                        materia=m.nombre,
+                        materia_id=m.id,
+                        resumen=dict(Counter(a.estado for a in asistencias)),
+                        asistencias=asistencias,
+                        notas=notas,
+                    )
+                )
+            return resultado
 
     @mcp.tool(annotations=SOLO_LECTURA)
     async def miel_evaluaciones(ctx: Ctx, materia: MateriaParam) -> Evaluaciones:

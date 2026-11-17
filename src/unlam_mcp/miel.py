@@ -26,6 +26,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from . import __version__, parsers
 from .parsers import (
+    Asistencia,
     Contenido,
     Destinatario,
     Evaluacion,
@@ -33,6 +34,7 @@ from .parsers import (
     Mensaje,
     MensajeCompleto,
     MensajeForo,
+    NotaEvaluacion,
     Practica,
     TemaForo,
     Turno,
@@ -415,6 +417,10 @@ class MielClient:
             if t.id == turno_id:
                 return t
         raise MielError(f"No hay un turno con id {turno_id}. Usá miel_turnos para ver los ids.")
+
+    async def asistencia(self, materia_id: str) -> tuple[list[Asistencia], list[NotaEvaluacion]]:
+        """Asistencia clase por clase y notas de las evaluaciones online."""
+        return parsers.parse_asistencia(await self._html(f"/portafolio/notas/comision/{materia_id}"))
 
     async def evaluaciones(self, materia_id: str) -> list[Evaluacion]:
         html = await self._html(f"/evaluacion/evaluaciones/comision/{materia_id}")
