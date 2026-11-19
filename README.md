@@ -1,5 +1,7 @@
 # unlam-mcp
 
+[![MCP Badge](https://lobehub.com/badge/mcp/blasestevez-unlam-mcp)](https://lobehub.com/mcp/blasestevez-unlam-mcp)
+
 Servidor [MCP](https://modelcontextprotocol.io) (Model Context Protocol) para la UNLaM. Expone **MIeL** (el campus virtual) e **Intraconsulta** como herramientas para asistentes de IA, de modo que el estudiante pueda consultar sus materias en lenguaje natural. Es compatible con cualquier cliente MCP: Claude, Cursor, VS Code (Copilot), Windsurf, Codex, Gemini CLI, entre otros.
 
 **Sitio:** [unlam-mcp.vercel.app](https://unlam-mcp.vercel.app), con la instalación paso a paso para cada cliente y las preguntas frecuentes.
