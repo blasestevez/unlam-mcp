@@ -33,7 +33,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/blasestevez/unlam-mcp"
+Homepage = "https://unlam-mcp.vercel.app"
+Documentation = "https://unlam-mcp.vercel.app/#instalar"
 Repository = "https://github.com/blasestevez/unlam-mcp"
 Issues = "https://github.com/blasestevez/unlam-mcp/issues"
 
