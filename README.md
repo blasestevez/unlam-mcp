@@ -1,8 +1,8 @@
 # unlam-mcp
 
-[![MCP Badge](https://lobehub.com/badge/mcp/blasestevez-unlam-mcp)](https://lobehub.com/mcp/blasestevez-unlam-mcp)
+[![PyPI](https://img.shields.io/pypi/v/unlam-mcp)](https://pypi.org/project/unlam-mcp/) [![Python](https://img.shields.io/pypi/pyversions/unlam-mcp)](https://pypi.org/project/unlam-mcp/) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![Glama](https://glama.ai/mcp/servers/blasestevez/unlam-mcp/badges/score.svg)](https://glama.ai/mcp/servers/blasestevez/unlam-mcp) [![MCP Badge](https://lobehub.com/badge/mcp/blasestevez-unlam-mcp)](https://lobehub.com/mcp/blasestevez-unlam-mcp)
 
-Servidor [MCP](https://modelcontextprotocol.io) (Model Context Protocol) para la UNLaM. Expone **MIeL** (el campus virtual) e **Intraconsulta** como herramientas para asistentes de IA, de modo que el estudiante pueda consultar sus materias en lenguaje natural. Es compatible con cualquier cliente MCP: Claude, Cursor, VS Code (Copilot), Windsurf, Codex, Gemini CLI, entre otros.
+**unlam-mcp** es un servidor MCP (Model Context Protocol) para **MIeL** e **Intraconsulta** de la UNLaM: consultá tus materias, apuntes, foros, entregas, notas y turnos desde Claude, Cursor, VS Code (Copilot), Codex o Gemini CLI, en lenguaje natural.
 
 **Sitio:** [unlam-mcp.vercel.app](https://unlam-mcp.vercel.app), con la instalación paso a paso para cada cliente y las preguntas frecuentes.
 
@@ -23,6 +23,17 @@ Ejemplos de consultas:
 
 > [!NOTE]
 > Proyecto no oficial, sin relación con la UNLaM. La mayoría de las herramientas son de solo lectura. Las únicas operaciones de escritura son **reservar y cancelar turnos, enviar mensajes y entregar prácticas**, y se ejecutan únicamente a pedido del usuario. El foro y las evaluaciones son de solo lectura: el servidor no publica en el foro ni inicia evaluaciones.
+
+## Inicio rápido
+
+Necesitás [uv](https://docs.astral.sh/uv/getting-started/installation/) y un cliente MCP.
+
+```bash
+uvx unlam-mcp login                        # guarda tu usuario y clave de MIeL en el sistema
+claude mcp add unlam -- uvx unlam-mcp      # Claude Code; otros clientes más abajo
+```
+
+Configuración para Cursor, Claude Desktop, VS Code, Codex, Gemini CLI y más: [Instalación](#instalación) o [unlam-mcp.vercel.app/#instalar](https://unlam-mcp.vercel.app/#instalar).
 
 ## Herramientas
 
@@ -270,18 +281,25 @@ El docstring de la herramienta es la descripción que recibe el modelo: debe ind
 
 Ante un fallo en una herramienta existente, la causa más probable es un cambio en el HTML de MIeL; la corrección corresponde a `parsers.py`.
 
-## Hoja de ruta
-
-- [ ] Intraconsulta: inscripción a materias y a mesas de final.
-
 ## Créditos
 
 Basado en [TBalles/miel-mcp](https://github.com/TBalles/miel-mcp) y [nialvape/utn-mcp](https://github.com/nialvape/utn-mcp).
 
 El uso de este servidor debe ser moderado y respetar el [aviso legal de MIeL](https://miel.unlam.edu.ar/principal/legal/).
 
+## In English
+
+unlam-mcp is an open-source MCP server for students of Universidad Nacional de La Matanza (UNLaM, Argentina). It exposes MIeL, the university's virtual campus, and Intraconsulta, the enrollment and academic records system, as 27 tools for any MCP client (Claude, Cursor, VS Code, Codex, Gemini CLI…): course files, handouts, forums, teacher messages, assignments and grades, attendance, exam slots and academic history. Almost every tool is read-only; the only write actions (booking exam slots, sending messages, submitting assignments) run only when the user asks. Runs locally over STDIO and stores credentials in the OS keychain.
+
+```bash
+uvx unlam-mcp login
+claude mcp add unlam -- uvx unlam-mcp
+```
+
+Website: https://unlam-mcp.vercel.app · Unofficial project, not affiliated with UNLaM.
+
 ## Licencia
 
-MIT
+[MIT](LICENSE)
 
 <!-- mcp-name: io.github.blasestevez/unlam-mcp -->
